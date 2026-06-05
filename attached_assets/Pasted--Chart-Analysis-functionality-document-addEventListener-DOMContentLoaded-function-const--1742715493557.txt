@@ -1,0 +1,270 @@
+// Chart Analysis functionality
+document.addEventListener('DOMContentLoaded', function () {
+  const analysisTab = document.getElementById('ai-analysis-tab');
+  if (!analysisTab) return;
+
+  initChartAnalysis();
+});
+
+function initChartAnalysis() {
+  const fileInput = document.getElementById('chart-upload');
+  const imagePreview = document.getElementById('chart-preview');
+  const analysisResult = document.getElementById('analysis-result');
+  const analyzeButton = document.getElementById('analyze-button');
+  const loader = document.getElementById('analysis-loader');
+
+  if (!fileInput || !imagePreview || !analysisResult || !analyzeButton || !loader) return;
+
+  // Handle file selection for preview
+  fileInput.addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Show image preview
+    imagePreview.src = URL.createObjectURL(file);
+    imagePreview.style.display = 'block';
+
+    // Clear previous results
+    analysisResult.innerHTML = '';
+    analysisResult.style.display = 'none';
+
+    // Enable analyze button
+    analyzeButton.disabled = false;
+  });
+
+  // Handle analyze button click
+ 
+  analyzeButton.addEventListener('click', function() {
+    const file = fileInput.files[0];
+    if (!file) {
+      showMessage('Please select a chart image first', 'warning');
+      return;
+    }
+
+    // Show loader
+    loader.classList.add('active');
+    analysisResult.style.display = 'none';
+    analyzeButton.disabled = true;
+
+    // Create form data for upload
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Send request to analyze endpoint
+    fetch('/analyze', {
+      method: 'POST',
+      body: formData,
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Process the result
+      let resultText = data.result.trim();
+      let jsonData;
+
+      // Remove backticks if present
+      if (resultText.includes('```json')) {
+        resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+      } else if (resultText.startsWith('```') && resultText.endsWith('```')) {
+        resultText = resultText.substring(3, resultText.length - 3).trim();
+      }
+
+      try {
+        // Parse JSON
+        jsonData = typeof resultText === 'string' ? JSON.parse(resultText) : resultText;
+        displayAnalysisResult(jsonData);
+      } catch (e) {
+        console.error('Error parsing JSON:', e);
+        displayAnalysisAsText(resultText);
+      }
+    })
+    .catch(error => {
+      console.error('Error analyzing chart:', error);
+      analysisResult.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Error analyzing chart: ${error.message}</p>
+          <p>Please try again or check the console for more details.</p>
+        </div>`;
+      analysisResult.style.display = 'block';
+    })
+    .finally(() => {
+      // Hide loader
+      loader.classList.remove('active');
+      analyzeButton.disabled = false;
+    });
+  });
+
+  function displayAnalysisAsText(text) {
+    analysisResult.innerHTML = `
+      <div class="analysis-content">
+        <div class="analysis-section">
+          <h3>Analysis Result</h3>
+          <div class="analysis-details">
+            <p>${text}</p>
+          </div>
+        </div>
+      </div>`;
+    analysisResult.style.display = 'block';
+    analysisResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function displayAnalysisResult(data) {
+    if (!analysisResult) return;
+
+    analysisResult.innerHTML = '';
+    analysisResult.style.display = 'block';
+
+    try {
+      let html = '<div class="analysis-content">';
+
+      // If result is an object, format it properly
+      if (typeof data === 'object' && data !== null) {
+        let index = 0;
+        for (const [key, value] of Object.entries(data)) {
+          html += `
+            <div class="analysis-section json-block " style="--index: ${index}">
+              <h3>${formatKey(key)}</h3>
+              <div class="analysis-details">
+                ${formatValue(value, 0)}
+              </div>
+            </div>`;
+          index++;
+        }
+      } else {
+        // Display as text (fallback)
+        html += `<p>${data}</p>`;
+      }
+
+      html += '</div>';
+      analysisResult.innerHTML = html;
+
+      // Scroll to result
+      analysisResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (error) {
+      console.error('Error displaying analysis:', error);
+      analysisResult.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Error displaying analysis results. Please try again.</p>
+        </div> `;
+    }
+  }
+
+  // Format JSON keys nicely (e.g., "price_trend" → "Price Trend")
+  function formatKey(key) {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, function(char) {
+      return char.toUpperCase();
+    });
+  }
+
+  // Format JSON values with better readability and nesting control
+  function formatValue(value, nestLevel = 0) {
+    // Limit nesting to prevent excessive depth
+    const MAX_NEST_LEVEL = 2;
+
+    if (value === null || value === undefined) {
+      return '<p class="null-value">No data available</p>';
+    }
+
+    if (typeof value === 'object') {
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          return '<p class="empty-array">Empty list</p>';
+        }
+
+        // For deep nesting, simplify the display
+        if (nestLevel >= MAX_NEST_LEVEL) {
+          return `<p class="json-array-summary">[${value.length} items]</p>`;
+        }
+
+        return `<ul class="json-array">${value.map(item => 
+          `<li>${formatValue(item, nestLevel + 1)}</li>`).join('')}</ul>`;
+      } else {
+        if (Object.keys(value).length === 0) {
+          return '<p class="empty-object">Empty object</p>';
+        }
+
+        // For deep nesting, simplify the display
+        if (nestLevel >= MAX_NEST_LEVEL) {
+          return `<p class="json-object-summary">{${Object.keys(value).length} properties}</p>`;
+        }
+
+        let result = '<div class="json-object">';
+        for (const [k, v] of Object.entries(value)) {
+          result += `<div class="json-property ">
+            <span class="json-key gradient-text">${formatKey(k)}</span>
+            <div class="json-value gradient-text">${formatValue(v, nestLevel + 1)}</div>
+          </div>`;
+        }
+        result += '</div>';
+        return result;
+      }
+    }
+
+    if (typeof value === 'string') {
+      // Check if value is a URL
+      const urlPattern = /^(https?:\/\/[^\s]+)$/;
+      if (urlPattern.test(value)) {
+        return `<a href="${value}" target="_blank" class="json-link">${value}</a>`;
+      }
+
+      // Add line breaks for multiline text
+      if (value.includes('\n')) {
+        return `<span class="json-string json-multiline">${value.replace(/\n/g, '<br>')}</span>`;
+      }
+    }
+
+    // Handle different data types with appropriate classes
+    const valueClass = typeof value;
+    return `<span class="json-${valueClass}">${value}</span>`;
+  }
+
+  function showMessage(message, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.textContent = message;
+    analysisResult.parentElement.insertBefore(messageDiv, analysisResult);
+    setTimeout(() => messageDiv.remove(), 5000);
+  }
+}
+
+function saveAnalysisToProfile(analysis) {
+  fetch('/user-status')
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === 'authenticated') {
+        fetch('/save-analysis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            analysis: analysis,
+            symbol: 'UNKNOWN',
+            timeframe: '1d',
+          }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            if (result.success) {
+              showMessage('Analysis saved successfully!', 'success');
+            }
+          })
+          .catch(() => {
+            showMessage('Error saving analysis', 'error');
+          });
+      } else {
+        showMessage('Please log in to save analysis', 'warning');
+      }
+    });
+}

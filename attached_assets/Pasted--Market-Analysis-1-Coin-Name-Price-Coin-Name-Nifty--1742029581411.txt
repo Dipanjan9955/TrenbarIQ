@@ -1,0 +1,64 @@
+             
+{
+  "Market Analysis": {
+    "1️⃣ Coin Name & Price": {
+      "Coin Name": "Nifty 50 Index",
+      "Price": "22,357.10"
+    },
+    "2️⃣ Strong & Weak Support/Resistance Levels": {
+      "Strong Support": "22,200 - 22,300 (approximate)",
+      "Weak Support": "22,400 (approximate)",
+      "Strong Resistance": "22,500 - 22,600 (approximate)",
+      "Weak Resistance": "22,900 (approximate)"
+    },
+    "3️⃣ SMC Concepts (Break of Structure, Change of Character)": {
+      "Break of Structure": "A bearish break of structure seems to have occurred around 22,600, leading to the current downtrend.",
+      "Change of Character": "The change of character is visible in the recent price action, showing a shift from buyers' dominance to sellers' dominance."
+    },
+    "4️⃣ Key Liquidity Zones (Buy/Sell Traps)": {
+      "Buy Traps": "Potential buy traps could be near the strong support levels, where buyers might be tempted to enter only to face further downside.",
+      "Sell Traps": "The area around the recent swing high (around 22,600) and any potential bounce from the strong support might create sell traps."
+    },
+    "5️⃣ Market Condition (Bullish/Bearish/Sideways)": {
+      "Market Condition": "Bearish"
+    },
+    "6️⃣ Future Trend Prediction": {
+      "Prediction": "The short-term trend appears bearish. However, a bounce from the strong support is possible before a further downtrend resumes.  The prediction needs confirmation with further analysis."
+    },
+    "7️⃣ Entry & Exit Strategy": {
+      "Entry Strategy": "A short entry could be considered if the price breaks below the strong support level with increased volume confirmation. A long entry might be considered on a bounce off the strong support level, but with caution.",
+      "Exit Strategy": "For short entries, the exit could be considered near the weak support level or if a reversal pattern suggests a change in trend.  For long entries, consider trailing stop-loss and exit based on predefined targets or if the support breaks."
+    },
+    "8️⃣ Stoploss & Take Profit Targets": {
+      "Short Stoploss": "22,400 (approximate)",
+      "Short Take Profit": "22,000 (approximate) ",
+      "Long Stoploss": "22,200 (approximate)",
+      "Long Take Profit": "22,600 (approximate)"
+    },
+    "9️⃣ Risk-Reward Ratio": {
+      "Short": "1:2 (approximate)",
+      "Long": "1:2 (approximate)"
+    },
+    "🔟 EMA Analysis (9, 21, 50, 200 EMA)": {
+      "9 EMA": "Currently below the price, indicating bearish momentum.",
+      "21 EMA": "Currently below the price, indicating bearish momentum.",
+      "50 EMA": "Not clearly visible on the chart, but likely below the price.",
+      "200 EMA": "Not visible, needs a wider time frame chart for analysis."
+    },
+    "11️⃣ RSI Condition (Overbought/Oversold/Divergence)": {
+      "RSI": "The RSI is below 30 showing an oversold condition. A bullish divergence is possible but requires confirmation"
+    },
+    "12️⃣ Bollinger Bands & Volume Spikes": {
+      "Bollinger Bands": "Not visible on the chart, further analysis needed.",
+      "Volume Spikes": "Increased volume near recent swing highs and lows might be present, signifying increased trading activity."
+    },
+    "13️⃣ Candlestick Pattern Recognition": {
+      "Patterns": "Further detailed chart analysis is needed to identify specific candlestick patterns"
+    },
+    "14️⃣ Institutional Accumulation/Distribution Analysis": {
+      "Analysis": "This cannot be determined from the provided chart alone.  More information and on-chain data would be required."
+    }
+  }
+}
+```
+

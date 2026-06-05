@@ -1,0 +1,101 @@
+Install Required Python Libraries
+Run this command in your terminal:
+
+bash
+Copy
+Edit
+pip install google-generativeai flask flask-cors
+3️⃣ Create main.py (Flask Backend)
+This script will analyze the trading chart using Gemini 1.5 Flash.
+
+python
+Copy
+Edit
+import google.generativeai as genai
+import base64
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+# Set up Gemini API Key (Use your free API key)
+GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+
+genai.configure(api_key=GEMINI_API_KEY)
+
+app = Flask(__name__)
+CORS(app)
+
+def encode_image(image_path):
+    """Convert image to base64 for API"""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode("utf-8")
+
+def analyze_chart(image_path):
+    """Analyze trading chart using Gemini 1.5 Flash"""
+    base64_image = encode_image(image_path)
+
+    model = genai.GenerativeModel("gemini-1.5-flash")
+
+    prompt_text = """
+    You are an AI trained in financial markets. Analyze the uploaded chart and provide structured insights:
+
+    1️⃣ Coin Name & Price  
+    2️⃣ Strong Support & Resistance  
+        - Weak support & resistance  
+        - SMC Concept  
+        - Break of structure & Change of character (ChoCH)  
+        - Major levels for buy traps & sell traps  
+    3️⃣ Market Condition (Bullish/Bearish/Sideways)  
+    4️⃣ Future Trend Prediction  
+    5️⃣ Entry & Exit Strategy  
+    6️⃣ Stoploss & Target  
+    7️⃣ Risk-Reward Ratio  
+    8️⃣ EMA Analysis (9 EMA, 21 EMA, 50 EMA, 200 EMA)  
+    9️⃣ RSI Condition (Overbought/Oversold/Divergence)  
+
+    Provide insights in a structured JSON format.
+    """
+
+    response = model.generate_content(
+        [prompt_text, {"mime_type": "image/png", "data": base64_image}]
+    )
+
+    return response.text
+
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    file = request.files["file"]
+    file_path = "temp_chart.png"
+    file.save(file_path)
+
+    try:
+        result = analyze_chart(file_path)
+        return jsonify({"result": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
+4️⃣ How to Run the Project
+Save the file as main.py.
+Run the Flask app:
+bash
+Copy
+Edit
+python main.py
+The server will start on http://127.0.0.1:5000.
+5️⃣ How to Test the API
+You can send a request using Postman or cURL:
+
+bash
+Copy
+Edit
+curl -X POST http://127.0.0.1:5000/analyze -F "file=@your_chart.png"
+Or use Postman:
+
+Method: POST
+URL: http://127.0.0.1:5000/analyze
+Body: form-data → Upload chart image as file.
+🎯 Why Use Gemini 1.5 Flash?
+✅ Free to use (limited quota per day).
+✅ Faster than GPT-4 for basic tasks.
+✅ Supports image analysis (trading charts).

@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@database-url",
+    "SESSION_SECRET": "@session-secret",
+    "GEMINI_API_KEY": "@gemini-api-key"
+  }
+}

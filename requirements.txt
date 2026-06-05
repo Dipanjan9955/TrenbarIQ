@@ -1,0 +1,14 @@
+flask
+flask-cors
+flask-login
+flask-sqlalchemy
+flask-migrate
+requests
+google-generativeai
+python-dotenv
+pillow
+gunicorn
+pytesseract
+Pillow
+opencv-python
+hashlib

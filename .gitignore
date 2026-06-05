@@ -1,0 +1,12 @@
+# local environment
+.env
+.venv/
+venv/
+# runtime & build artifacts
+uploads/
+*.sqlite
+*.db
+*.pyc
+__pycache__/
+instance/
+.vscode/

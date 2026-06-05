@@ -1,0 +1,47 @@
+import { FaChartLine, FaLayerGroup, FaBullseye, FaBalanceScale, FaGlobe, FaLightbulb, FaSignInAlt } from "react-icons/fa";
+
+const AnalysisCard = ({ title, icon, content }) => (
+  <div className="bg-gray-900 p-5 rounded-xl shadow-lg transition-transform transform hover:scale-105">
+    <div className="flex items-center mb-3">
+      {icon}
+      <h2 className="text-lg font-bold text-white ml-2">{title}</h2>
+    </div>
+    {typeof content === "object" ? (
+      <ul className="text-gray-300">
+        {Object.entries(content).map(([key, value]) => (
+          <li key={key} className="mb-1">
+            <span className="font-semibold">{key}:</span> {value}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-gray-300">{content}</p>
+    )}
+  </div>
+);
+
+const AnalysisResults = ({ analysisResult }) => {
+  if (!analysisResult) return <p className="text-gray-400">No data available.</p>;
+
+  const sections = [
+    { key: "1️⃣ Coin Name & Price", icon: <FaChartLine className="text-blue-400 text-xl" /> },
+    { key: "2️⃣ Strong & Weak Support/Resistance Levels", icon: <FaBalanceScale className="text-yellow-400 text-xl" /> },
+    { key: "3️⃣ SMC Concepts (Break of Structure, Change of Character)", icon: <FaLayerGroup className="text-purple-400 text-xl" /> },
+    { key: "4️⃣ Key Liquidity Zones (Buy/Sell Traps)", icon: <FaBullseye className="text-red-400 text-xl" /> },
+    { key: "5️⃣ Market Condition (Bullish/Bearish/Sideways)", icon: <FaGlobe className="text-green-400 text-xl" /> },
+    { key: "6️⃣ Future Trend Prediction", icon: <FaLightbulb className="text-pink-400 text-xl" /> },
+    { key: "7️⃣ Entry & Exit Strategy", icon: <FaSignInAlt className="text-indigo-400 text-xl" /> },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {sections.map(({ key, icon }) =>
+        analysisResult["Market Analysis"][key] ? (
+          <AnalysisCard key={key} title={key} icon={icon} content={analysisResult["Market Analysis"][key]} />
+        ) : null
+      )}
+    </div>
+  );
+};
+
+export default AnalysisResults;

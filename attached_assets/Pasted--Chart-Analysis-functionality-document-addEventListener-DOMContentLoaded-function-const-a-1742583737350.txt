@@ -1,0 +1,185 @@
+// Chart Analysis functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const analysisTab = document.getElementById('ai-analysis-tab');
+  if (!analysisTab) return;
+
+  initChartAnalysis();
+});
+
+function initChartAnalysis() {
+  const fileInput = document.getElementById('chart-upload');
+  const imagePreview = document.getElementById('chart-preview');
+  const analysisResult = document.getElementById('analysis-result');
+  const analyzeButton = document.getElementById('analyze-button');
+  const loader = document.getElementById('analysis-loader');
+
+  if (!fileInput || !imagePreview || !analysisResult || !analyzeButton || !loader) return;
+
+  // Handle file selection for preview
+  fileInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Show image preview
+    imagePreview.src = URL.createObjectURL(file);
+    imagePreview.style.display = 'block';
+
+    // Clear previous results
+    analysisResult.innerHTML = '';
+    analysisResult.style.display = 'none';
+
+    // Enable analyze button
+    analyzeButton.disabled = false;
+  });
+
+  // Handle analyze button click
+  analyzeButton.addEventListener('click', async function() {
+    const file = fileInput.files[0];
+    if (!file) {
+      showMessage('Please select a chart image first', 'warning');
+      return;
+    }
+
+    try {
+      // Show loader
+      loader.classList.add('active');
+      analysisResult.style.display = 'none';
+      analyzeButton.disabled = true;
+
+      // Create form data for upload
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Send request to analyze endpoint
+      const response = await fetch('/analyze', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Parse and display the analysis result
+      let resultText = data.result;
+      try {
+        // Try to parse if it's JSON
+        const jsonResult = JSON.parse(resultText);
+        displayAnalysisResult(jsonResult);
+      } catch (e) {
+        // If not JSON, display as is
+        displayAnalysisResult(resultText);
+      }
+
+    } catch (error) {
+      console.error('Error analyzing chart:', error);
+      analysisResult.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Error analyzing chart: ${error.message}</p>
+          <p>Please try again or check the console for more details.</p>
+        </div>`;
+      analysisResult.style.display = 'block';
+    } finally {
+      // Hide loader
+      loader.classList.remove('active');
+      analyzeButton.disabled = false;
+    }
+  });
+
+  function displayAnalysisResult(data) {
+    if (!analysisResult) return;
+
+    analysisResult.innerHTML = '';
+    analysisResult.style.display = 'block';
+
+    try {
+      // Create result HTML
+      let html = '<div class="analysis-content">';
+
+      if (typeof data === 'string') {
+        // Display string result
+        html += `<pre>${data}</pre>`;
+      } else {
+        // Display JSON result
+        for (const [key, value] of Object.entries(data)) {
+          html += `
+            <div class="analysis-section">
+              <h3>${key}</h3>
+              <div class="analysis-details">
+                ${typeof value === 'object' 
+                  ? Object.entries(value).map(([k, v]) => `
+                      <div class="analysis-item">
+                        <span class="item-label">${k}:</span>
+                        <span class="item-value">${v}</span>
+                      </div>`).join('')
+                  : `<p>${value}</p>`
+                }
+              </div>
+            </div>`;
+        }
+      }
+
+      html += '</div>';
+      analysisResult.innerHTML = html;
+
+      // Scroll to result
+      analysisResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (error) {
+      console.error('Error displaying analysis:', error);
+      analysisResult.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Error displaying analysis results. Please try again.</p>
+        </div>`;
+    }
+  }
+
+  function showMessage(message, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.textContent = message;
+    analysisResult.parentElement.insertBefore(messageDiv, analysisResult);
+    setTimeout(() => messageDiv.remove(), 5000);
+  }
+}
+
+function saveAnalysisToProfile(analysis) {
+  // Get current user status
+  fetch('/user-status')
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'authenticated') {
+        // Save analysis
+        fetch('/save-analysis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            analysis: analysis,
+            symbol: 'UNKNOWN',
+            timeframe: '1d'
+          })
+        })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            showMessage('Analysis saved successfully!', 'success');
+          }
+        })
+        .catch(error => {
+          showMessage('Error saving analysis', 'error');
+        });
+      } else {
+        showMessage('Please log in to save analysis', 'warning');
+      }
+    });
+}

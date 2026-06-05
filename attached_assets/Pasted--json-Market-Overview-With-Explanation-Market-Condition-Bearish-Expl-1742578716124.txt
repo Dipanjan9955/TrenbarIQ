@@ -1,0 +1,85 @@
+```json
+{
+  "Market Overview (With Explanation)": {
+    "Market Condition": "Bearish",
+    "Explanation": "The price is making lower lows and lower highs, indicating a clear downtrend.  There is no evidence of a trend reversal yet.",
+    "Trend Strength": "Moderate",
+    "Explanation": "The 9-EMA is below the 20-EMA, suggesting bearish momentum. Volume isn't exceptionally high, indicating neither strong confirmation nor weakness.",
+    "Momentum Analysis": "Decreasing",
+    "Explanation": "The price is declining, showing slowing momentum. The RSI is in oversold territory but lacks significant bullish divergence, confirming the bearish momentum.",
+    "Current Price Action Behavior": "Downtrend",
+    "Explanation": "The price consistently breaks lower lows and fails to make higher highs.  No clear breakout or consolidation patterns are apparent. ",
+    "Volume Analysis": "Low",
+    "Explanation": "Volume is relatively low during the price decline, indicating a lack of strong selling pressure. This is consistent with a moderate bearish trend, not an aggressive one."
+  },
+  "Key Technical Levels (With Explanation)": {
+    "Support Levels": [
+      "22,200",
+      "22,100 (potential)"
+    ],
+    "Explanation": "22,200 represents a significant previous support level.  22,100 is a potential support based on the chart's visual structure.",
+    "Resistance Levels": [
+      "22,400",
+      "22,500"
+    ],
+    "Explanation": "22,400 and 22,500 represent areas of recent rejection. They also coincide with previous highs and horizontal trendlines.",
+    "Break of Structure (BoS)": "Yes",
+    "Explanation": "The recent price action has clearly broken below the lower bounds of prior swing lows, confirming the current downtrend.",
+    "Change of Character (ChoCh)": "Yes",
+    "Explanation": "The trend has shifted from the previous upward movement to the current significant downward movement.  This suggests a clear change in market character.",
+    "Fibonacci Levels": [
+      "22,300 (38.2%)",
+      "22,250 (50%)",
+      "22,200 (61.8%)"
+    ],
+    "Explanation": "These levels are calculated based on a prior swing high to swing low. They are potential areas of temporary support or bounce.",
+    "Moving Averages (9 EMA, 20 EMA, 50 EMA, 200 EMA)": {
+      "9 EMA": "Below",
+      "20 EMA": "Below",
+      "50 EMA": "Below",
+      "200 EMA": "Not visible on this timeframe"
+    },
+    "Explanation": "All visible moving averages are below the current price, reinforcing the bearish trend."
+  },
+  "Trade Setup & Risk Management (With Reasoning)": {
+    "Optimal Entry Point": "22,250",
+    "Explanation": "Waiting for a potential bounce off the 50% Fibonacci retracement level (22,250), aiming for a risk-reward setup.",
+    "Exit Target": "22,400",
+    "Explanation": "The target is set at the significant resistance level of 22,400.",
+    "Stop Loss Placement": "22,150",
+    "Explanation": "Stop-loss placed below the recent swing low to minimise noise and potential false breakouts.",
+    "Risk-Reward Ratio": "1:2",
+    "Explanation": "The potential profit (75 points) is significantly larger than the potential loss (75 points).",
+    "Liquidity Zones": "22,100-22,150",
+    "Explanation": "There is a possible liquidity trap at around 22,100-22,150 which could be a short term stop hunt.",
+    "Institutional Order Blocks": "None clearly visible on this timeframe"
+  },
+  "Indicators & Confirmation Signals (With Explanation)": {
+    "Relative Strength Index (RSI)": "Oversold",
+    "Explanation": "The RSI is in oversold territory, potentially indicating a short-term bounce.",
+    "MACD Crossover": "Not Clearly Visible",
+    "Explanation": "The MACD lines are close but not yet confirming a clear crossover.",
+    "Bollinger Bands": "Expansion",
+    "Explanation": "Bollinger Bands are expanding, indicating an increase in volatility.",
+    "Volume Profile": "Not visible on the presented chart",
+    "VWAP Positioning": "Not visible on the presented chart",
+    "Explanation": "VWAP would help confirm institutional participation and trend strength if visible."
+  },
+  "Market Psychology Insights": {
+    "Retail Trader Sentiment": "Potentially bearish",
+    "Explanation": "A majority of retail traders might have already closed positions after the recent fall, increasing the chances of a short term bounce.",
+    "Smart Money Moves": "Potentially accumulating at lower levels",
+    "Explanation": "Smart money could be buying at support levels, looking for a bounce or reversal.",
+    "Liquidity Grabs & Stop Hunts": "Possible below 22,150",
+    "Explanation": "Short sellers might set traps around the 22,150 support area, triggering stop-losses of long positions."
+  },
+  "Final Conclusion & Action Plan (With Confidence Level)": {
+    "Trade Bias": "Slightly Bullish (short-term)",
+    "Explanation": "The market is bearish overall, but the oversold conditions and potential support at 22,250 create a short-term bullish bias.",
+    "Confidence Level": "Medium",
+    "Explanation": "The trade setup relies on a potential bounce. The trend is still bearish, hence this is not a high-confidence trade.",
+    "Recommended Strategy": "Swing Trading",
+    "Explanation": "This strategy allows for a short-term position based on a likely but not certain bounce, while respecting the dominant bearish trend."
+  }
+}
+```

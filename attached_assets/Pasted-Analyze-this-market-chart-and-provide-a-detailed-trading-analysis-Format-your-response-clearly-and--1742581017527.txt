@@ -1,0 +1,41 @@
+Analyze this market chart and provide a detailed trading analysis. Format your response clearly and explain **why** each condition exists.
+
+📈 **Market Overview (With Explanation)**
+- **Market Condition:** [Bullish/Bearish/Sideways/Volatile] → (Explain why: Is price making higher highs/lows? Is there a trend reversal or continuation?)
+- **Trend Strength:** [Weak/Moderate/Strong] → (Explain using Moving Averages, Volume, or Structure)
+- **Momentum Analysis:** [Increasing/Decreasing/Neutral] → (Is price accelerating or slowing? RSI/MACD confirmation?)
+- **Current Price Action Behavior:** [Breakout/Reversal/Consolidation] → (Has price broken key resistance? Is there rejection?)
+- **Volume Analysis:** [High/Low/Divergence] → (Is volume confirming the move or showing weakness?)
+
+📊 **Key Technical Levels (With Explanation)**
+- **Support Levels:** [List support zones] → (Why is this support important? Previous bounce? High liquidity?)
+- **Resistance Levels:** [List resistance zones] → (Is price rejecting? Double top formation?)
+- **Break of Structure (BoS):** [Yes/No] → (Did price invalidate previous highs/lows?)
+- **Change of Character (ChoCh):** [Yes/No] → (Did trend shift? Smart money trap?)
+- **Fibonacci Levels:** [38.2%, 50%, 61.8% retracement zones] → (Why are these relevant? Deep pullback or continuation?)
+- **Moving Averages (9 EMA, 20 EMA, 50 EMA, 200 EMA):** [Price Above/Below?] → (Is it trending or ranging?)
+
+📌 **Trade Setup & Risk Management (With Reasoning)**
+- **Optimal Entry Point:** [Suggested Entry Price] → (Why enter here? Liquidity grab? Retest of support?)
+- **Exit Target:** [Suggested Profit Target] → (Why this target? Based on resistance, previous highs/lows?)
+- **Stop Loss Placement:** [Safe SL Level] → (Why place stop loss here? Below structure? Avoid market noise?)
+- **Risk-Reward Ratio:** [Example: 1:2, 1:3] → (Is the trade worth taking?)
+- **Liquidity Zones:** [Where are stop hunts likely?] → (Is price engineered to grab liquidity?)
+- **Institutional Order Blocks:** [Where might smart money react?] → (Is price near high-volume zones?)
+
+📉 **Indicators & Confirmation Signals (With Explanation)**
+- **Relative Strength Index (RSI):** [Overbought/Oversold? Divergence?] → (Is momentum shifting?)
+- **MACD Crossover:** [Bullish/Bearish Crossover?] → (Is momentum gaining strength?)
+- **Bollinger Bands:** [Expansion/Squeeze/Reversal Potential?] → (Is volatility increasing?)
+- **Volume Profile:** [High Liquidity Areas?] → (Is price near major trade zones?)
+- **VWAP Positioning:** [Above/Below VWAP? Trend Confirmation?] → (Are institutions buying or selling?)
+
+📍 **Market Psychology Insights**
+- **Retail Trader Sentiment:** [Where might retail traders get trapped?] → (Fake breakouts? Over-leveraged longs?)
+- **Smart Money Moves:** [Signs of institutional activity?] → (Are big players accumulating/distributing?)
+- **Liquidity Grabs & Stop Hunts:** [Where might stop losses be taken?] → (Trap setup by market makers?)
+
+📢 **Final Conclusion & Action Plan (With Confidence Level)**
+- **Trade Bias:** [Bullish/Bearish/Neutral] → (Why take this bias? Strong trend? Reversal signs?)
+- **Confidence Level:** [High/Medium/Low] → (How reliable is this trade setup?)
+- **Recommended Strategy:** [Scalping/Swing Trading/Trend Following/Range Trading] → (Best approach based on market behavior)

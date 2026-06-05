@@ -1,0 +1,37 @@
+Step 1: Set Up the Basic Structure
+Prompt:
+"Create a multi-tab application with a black theme and neon effects. The app should have five tabs: AI Analysis, Charts, Market Tips, Backtest, and Profile. Each tab should have a smooth transition and minimalistic UI with RGB glowing effects on headings and borders."
+
+Step 2: AI Analysis Tab (Chart Image Upload & Analysis)
+Prompt:
+"In the AI Analysis tab, allow users to upload crypto/stock chart images. Use the Gemini Flash API to analyze the chart and provide insights, including:
+
+Current market condition
+Current price in the chart
+Entry and exit points
+Analysis based on standard logic (SMC, Bollinger Bands, RSI, EMA, Volume, etc.)
+Ensure the results are displayed in a clear, structured format with highlighted key points."
+
+Step 3: TradingView Chart Widget
+Prompt:
+"In the Charts tab, integrate a TradingView chart widget for a seamless trading experience. Above the chart, include a search bar for traders to look up different assets quickly. The widget should support indicators like Bollinger Bands, RSI, and EMA."
+
+Step 4: Market Tips Section
+Prompt:
+"Create a Market Tips tab where real-time market insights, news, and expert predictions are displayed. The data should be fetched dynamically using an API or preset AI-generated trading insights."
+
+Step 5: Backtest Feature (Demo Trading with Virtual Money)
+Prompt:
+"In the Backtest tab, allow users to test trading strategies using virtual money. The feature should simulate trades based on past market data and show potential profits/losses. Users should be able to modify parameters like stop-loss and take-profit levels."
+
+Step 6: Login & Register with Skip Option
+Prompt:
+"Implement a login and registration system. However, include a 'Skip' button for users who don't want to sign in. If the user skips, they get limited access, but registered users can save preferences and track their backtest results."
+
+Step 7: UI Theme - Black & Neon RGB Effect
+Prompt:
+"Apply a dark futuristic theme with neon effects. The UI should feature:
+
+Black background with neon-colored borders
+RGB glow effects on headings and important elements
+Smooth animations for transitions"

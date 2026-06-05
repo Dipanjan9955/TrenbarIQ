@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrendBar IQ - Advanced Trading Analysis</title>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- TradingView Widget -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <!-- Animate.css for animations -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="C:\Users\KIIT0001\Downloads\AITradeMaster\AITradeMaster\static\css\style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header id="app-header">
+    <div class="container">
+      <div class="nav">
+        <!-- <div class="logo animate__animated animate__fadeIn "> -->
+          <!-- <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg"> -->
+            <!-- <path d="M18 0C8.059 0 0 8.059 0 18s8.059 18 18 18 18-8.059 18-18S27.941 0 18 0zm0 2.25c8.698 0 15.75 7.052 15.75 15.75S26.698 33.75 18 33.75 2.25 26.698 2.25 18 9.302 2.25 18 2.25z" fill="url(#paint0_linear)"/>
+            <path d="M27 9L18 18l-9 9" stroke="url(#paint1_linear)" stroke-width="3" stroke-linecap="round"/>
+            <path d="M9 9l9 9 9 9" stroke="url(#paint2_linear)" stroke-width="3" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="paint0_linear" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00F7FF"/>
+                <stop offset="1" stop-color="#00FF7F"/>
+              </linearGradient>
+              <linearGradient id="paint1_linear" x1="9" y1="9" x2="27" y2="27" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FF00E5"/>
+                <stop offset="1" stop-color="#00F7FF"/>
+              </linearGradient>
+              <linearGradient id="paint2_linear" x1="9" y1="9" x2="27" y2="27" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00FF7F"/>
+                <stop offset="1" stop-color="#FFCB00"/>
+              </linearGradient>
+            </defs>
+          </svg> -->
+          <span class="logo-text">TrendBar IQ</span>
+        </div>
+        <div id="user-info" class="animate__animated animate__fadeIn gradient-text">
+          <!-- Will be populated by JavaScript -->
+          <span>Loading...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+      {% for message in get_flashed_messages() %}
+      <div class="flash-message">
+        <div class="flash-message-content">
+          <div class="flash-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="flash-text">{{ message }}</div>
+        </div>
+        <button class="flash-close" onclick="this.parentElement.style.display='none'">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Desktop Tabs -->
+    <div class="tabs desktop-tabs">
+      <div class="tab" data-tab="ai-analysis-tab"><i class="fas fa-robot"></i> AI Analysis</div>
+      <div class="tab" data-tab="charts-tab"><i class="fas fa-chart-line"></i> Charts</div>
+      <div class="tab" data-tab="market-tips-tab"><i class="fas fa-lightbulb"></i> Market Tips</div>
+      <div class="tab" data-tab="backtest-tab"><i class="fas fa-flask"></i> Backtest</div>
+      <div class="tab" data-tab="profile-tab"><i class="fas fa-user"></i> Profile</div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-nav">
+      <div class="nav-item" data-tab="ai-analysis-tab">
+        <i class="fas fa-robot"></i>
+        <span>Analysis</span>
+      </div>
+      <div class="nav-item" data-tab="charts-tab">
+        <i class="fas fa-chart-line"></i>
+        <span>Charts</span>
+      </div>
+      <div class="nav-item" data-tab="market-tips-tab">
+        <i class="fas fa-lightbulb"></i>
+        <span>Tips</span>
+      </div>
+      <div class="nav-item" data-tab="backtest-tab">
+        <i class="fas fa-flask"></i>
+        <span>Backtest</span>
+      </div>
+      <div class="nav-item" data-tab="profile-tab">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="ai-analysis-tab">
+      <div class="card">
+        <div class="card-title">
+          <h2>Chart Image Analysis</h2>
+        </div>
+        <p>Upload a trading chart image for AI-powered analysis. Provide above 15 minutes Timeframe for batter anyalysis.  </p>
+        
+        <div class="form-group">
+          <div class="file-upload">
+            <label for="chart-upload" class="file-upload-label">
+              <i class="fas fa-upload"></i> Upload Trading Chart Image
+            </label>
+            <input type="file" id="chart-upload" class="file-upload-input" accept="image/*">
+          </div>
+        </div>
+        
+        <img id="chart-preview" class="image-preview" style="display: none;">
+        
+        <div class="form-group">
+          <button id="analyze-button" class="btn btn-primary" disabled>
+            <i class="fas fa-robot"></i> Analyze Chart
+          </button>
+        </div>
+        
+        <div id="analysis-loader" class="loader"></div>
+        
+        <div id="analysis-result" class="analysis-result" style="display: none;"></div>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="charts-tab">
+      <div class="card">
+        <div class="card-title">
+          <h2>Live Trading Charts</h2>
+        </div>
+        
+        <div class="tv-search-container">
+          <div class="row">
+            <div class="col">
+              <input type="text" id="symbol-search" class="tv-search-input" placeholder="Enter symbol (e.g., BINANCE:BTCUSDT, NASDAQ:AAPL)">
+            </div>
+            <div class="col-auto">
+              <button id="search-button" class="btn btn-primary">
+                <i class="fas fa-search"></i> Search
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="popular-symbols" class="mb-3">
+          <h3>Popular Markets</h3>
+          <div class="popular-symbols-grid">
+            <button class="btn btn-outline-primary quick-select-symbol" data-symbol="BINANCE:BTCUSDT">Bitcoin</button>
+            <button class="btn btn-outline-primary quick-select-symbol" data-symbol="BINANCE:ETHUSDT">Ethereum</button>
+            <button class="btn btn-outline-primary quick-select-symbol" data-symbol="NASDAQ:AAPL">Apple</button>
+            <button class="btn btn-outline-primary quick-select-symbol" data-symbol="NASDAQ:TSLA">Tesla</button>
+            <button class="btn btn-outline-primary quick-select-symbol" data-symbol="OANDA:XAUUSD">Gold</button>
+            <button class="btn btn-outline-primary quick-select-symbol" data-symbol="FOREXCOM:SPXUSD">S&P 500</button>
+          </div>
+        </div>
+        
+        <div id="timeframe-selection" class="timeframe-buttons mb-3">
+          <button class="btn btn-sm btn-outline-secondary timeframe-btn" data-timeframe="1">1m</button>
+          <button class="btn btn-sm btn-outline-secondary timeframe-btn" data-timeframe="5">5m</button>
+          <button class="btn btn-sm btn-outline-secondary timeframe-btn" data-timeframe="15">15m</button>
+          <button class="btn btn-sm btn-outline-secondary timeframe-btn" data-timeframe="60">1h</button>
+          <button class="btn btn-sm btn-outline-secondary timeframe-btn" data-timeframe="240">4h</button>
+          <button class="btn btn-sm btn-outline-secondary timeframe-btn active" data-timeframe="D">1D</button>
+          <button class="btn btn-sm btn-outline-secondary timeframe-btn" data-timeframe="W">1W</button>
+        </div>
+        
+        <div id="tradingview-widget" class="tradingview-widget-container"></div>
+        
+        <div id="chart-indicators" class="indicators-list mb-3">
+          <h3>Indicators</h3>
+          <div class="row">
+            <div class="col">
+              <div class="form-check">
+                <input class="form-check-input indicator-checkbox" type="checkbox" value="BB@tv-basicstudies" id="indicator-BB" checked>
+                <label class="form-check-label" for="indicator-BB">Bollinger Bands</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input indicator-checkbox" type="checkbox" value="RSI@tv-basicstudies" id="indicator-RSI" checked>
+                <label class="form-check-label" for="indicator-RSI">RSI</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check">
+                <input class="form-check-input indicator-checkbox" type="checkbox" value="MAExp@tv-basicstudies" id="indicator-MAExp" checked>
+                <label class="form-check-label" for="indicator-MAExp">EMA</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input indicator-checkbox" type="checkbox" value="MACD@tv-basicstudies" id="indicator-MACD">
+                <label class="form-check-label" for="indicator-MACD">MACD</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="market-tips-tab">
+      <div class="card">
+        <div class="card-title">
+          <h2>Market Tips & Insights</h2>
+        </div>
+        
+        <div class="market-tips-controls mb-4">
+          <div class="row">
+            <div class="col">
+              <div class="btn-group">
+                <button class="btn btn-outline-primary filter-sentiment active" data-sentiment="all">All</button>
+                <button class="btn btn-outline-success filter-sentiment" data-sentiment="bullish">Bullish</button>
+                <button class="btn btn-outline-danger filter-sentiment" data-sentiment="bearish">Bearish</button>
+                <button class="btn btn-outline-warning filter-sentiment" data-sentiment="neutral">Neutral</button>
+              </div>
+            </div>
+            <div class="col-auto">
+              <button id="refresh-tips" class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="tips-loader" class="loader"></div>
+        
+        <div id="market-tips-container">
+          <!-- Will be populated by JavaScript -->
+          <p class="text-center">Loading market tips...</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tab-content auth-required-tab" id="backtest-tab">
+      <div class="card">
+        <div class="card-title">
+          <h2>Strategy Backtesting</h2>
+        </div>
+        
+        <form id="backtest-form">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="backtest-asset">Asset</label>
+                <select id="backtest-asset" class="form-control">
+                  <option value="BTCUSDT">Bitcoin (BTCUSDT)</option>
+                  <option value="ETHUSDT">Ethereum (ETHUSDT)</option>
+                  <option value="BNBUSDT">Binance Coin (BNBUSDT)</option>
+                  <!-- Will be populated by JavaScript -->
+                </select>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="backtest-timeframe">Timeframe</label>
+                <select id="backtest-timeframe" class="form-control">
+                  <option value="1m">1 Minute</option>
+                  <option value="5m">5 Minutes</option>
+                  <option value="15m">15 Minutes</option>
+                  <option value="1h">1 Hour</option>
+                  <option value="4h">4 Hours</option>
+                  <option value="1d" selected>1 Day</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="backtest-capital">Initial Capital (USD)</label>
+                <input type="number" id="backtest-capital" class="form-control" value="10000" min="100">
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="backtest-strategy">Strategy</label>
+                <select id="backtest-strategy" class="form-control">
+                  <option value="sma_crossover">SMA Crossover</option>
+                  <option value="bollinger_bands">Bollinger Bands</option>
+                  <option value="rsi_oversold">RSI Oversold/Overbought</option>
+                  <!-- Will be populated by JavaScript -->
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div id="strategy-parameters">
+            <!-- Will be populated by JavaScript based on selected strategy -->
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="stop-loss">Stop Loss (%)</label>
+                <input type="number" id="stop-loss" class="form-control" value="5" min="1" max="50" step="0.5">
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="take-profit">Take Profit (%)</label>
+                <input type="number" id="take-profit" class="form-control" value="15" min="1" max="100" step="0.5">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <button type="button" id="run-backtest" class="btn btn-primary">
+              <i class="fas fa-play"></i> Run Backtest
+            </button>
+          </div>
+        </form>
+        
+        <div id="backtest-chart" class="backtest-chart mt-4"></div>
+        
+        <div id="backtest-results" class="backtest-results mt-4">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="tab-content auth-required-tab" id="profile-tab">
+      <!-- Will be populated by JavaScript when user is logged in -->
+      <div class="card">
+        <div class="card-body text-center">
+          <h3>Loading profile...</h3>
+          <div class="loader active"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="container mt-5 mb-3">
+    <div class="text-center">
+      <div class="footer-logo">
+        <svg width="24" height="24" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
+          <path d="M18 0C8.059 0 0 8.059 0 18s8.059 18 18 18 18-8.059 18-18S27.941 0 18 0zm0 2.25c8.698 0 15.75 7.052 15.75 15.75S26.698 33.75 18 33.75 2.25 26.698 2.25 18 9.302 2.25 18 2.25z" fill="url(#paint0_linear)"/>
+          <path d="M27 9L18 18l-9 9" stroke="url(#paint1_linear)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M9 9l9 9 9 9" stroke="url(#paint2_linear)" stroke-width="3" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="paint0_linear" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00F7FF"/>
+              <stop offset="1" stop-color="#00FF7F"/>
+            </linearGradient>
+            <linearGradient id="paint1_linear" x1="9" y1="9" x2="27" y2="27" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FF00E5"/>
+              <stop offset="1" stop-color="#00F7FF"/>
+            </linearGradient>
+            <linearGradient id="paint2_linear" x1="9" y1="9" x2="27" y2="27" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00FF7F"/>
+              <stop offset="1" stop-color="#FFCB00"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="logo-text-small">TrendBar IQ</span>
+      </div>
+      <p class="mt-2">
+        <span class="rgb-text">TrendBar IQ</span> &copy; 2025 | Powered by <a href="https://griptoworld.com" class="gradient-text">Grip To World</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/chart-analysis.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tradingview.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/market-tips.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/backtest.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

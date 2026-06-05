@@ -1,0 +1,162 @@
+// Fix the view analysis functionality in profile.js
+
+// In the displayUserProfile function, update the view analysis buttons event handlers:
+function displayUserProfile(username, userId, preferences, analyses, backtestResults) {
+  // ... existing code ...
+  
+  // Add view analysis buttons event listeners
+  document.querySelectorAll('.view-analysis-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const index = parseInt(this.dataset.index);
+      const analysis = analyses[index];
+      if (analysis) {
+        try {
+          // Parse the analysis data correctly
+          let resultData = {};
+          
+          // Check if analysis has result or result_json property
+          if (analysis.result_json) {
+            if (typeof analysis.result_json === 'string') {
+              resultData = JSON.parse(analysis.result_json);
+            } else if (typeof analysis.result_json === 'object') {
+              resultData = analysis.result_json;
+            }
+          } else if (analysis.result) {
+            if (typeof analysis.result === 'string') {
+              resultData = JSON.parse(analysis.result);
+            } else if (typeof analysis.result === 'object') {
+              resultData = analysis.result;
+            }
+          } else if (analysis.analysis) {
+            // Try to parse analysis field
+            if (typeof analysis.analysis === 'string') {
+              resultData = JSON.parse(analysis.analysis);
+            } else if (typeof analysis.analysis === 'object') {
+              resultData = analysis.analysis;
+            }
+          }
+          
+          // If resultData is still empty, show a fallback message
+          if (Object.keys(resultData).length === 0) {
+            resultData = {
+              "Analysis Summary": "Unable to parse analysis data. The format may not be supported."
+            };
+          }
+          
+          showAnalysisModal(resultData, analysis.symbol, analysis.timeframe);
+        } catch (e) {
+          console.error("Error parsing analysis JSON:", e, analysis);
+          showNotification('Error parsing analysis data', 'error');
+        }
+      }
+    });
+  });
+  
+  // ... rest of the function ...
+}
+
+// Update the showAnalysisModal function to better handle different data formats
+function showAnalysisModal(analysisData, symbol, timeframe) {
+  // Create modal element
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  
+  let analysisContent = '';
+  
+  try {
+    // Format the analysis data
+    if (typeof analysisData === 'string') {
+      // Try to parse string as JSON
+      try {
+        const jsonData = JSON.parse(analysisData);
+        analysisContent = formatJsonAnalysis(jsonData);
+      } catch (e) {
+        // Display as plain text if JSON parsing fails
+        analysisContent = `<div class="analysis-section">
+          <h3>Analysis Result</h3>
+          <div class="analysis-details">
+            <p>${analysisData}</p>
+          </div>
+        </div>`;
+      }
+    } else if (typeof analysisData === 'object' && analysisData !== null) {
+      // Object data
+      analysisContent = formatJsonAnalysis(analysisData);
+    } else {
+      // Fallback for unknown data types
+      analysisContent = `<div class="analysis-section">
+        <h3>Analysis Result</h3>
+        <div class="analysis-details">
+          <p>No details available</p>
+        </div>
+      </div>`;
+    }
+  } catch (error) {
+    console.error("Error formatting analysis data:", error);
+    analysisContent = `<div class="analysis-section">
+      <h3>Error</h3>
+      <div class="analysis-details">
+        <p>An error occurred while formatting the analysis data.</p>
+      </div>
+    </div>`;
+  }
+  
+  modal.innerHTML = `
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>${symbol || 'Chart Analysis'} (${timeframe || 'N/A'})</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-content analysis-content">
+        ${analysisContent}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Add close button event listener
+  modal.querySelector('.modal-close').addEventListener('click', function() {
+    modal.remove();
+  });
+  
+  // Close on outside click
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
+// Helper function to format JSON analysis data
+function formatJsonAnalysis(data) {
+  if (!data || typeof data !== 'object') {
+    return '<p>No data available</p>';
+  }
+  
+  return Object.entries(data).map(([key, value], index) => {
+    let formattedValue = '';
+    
+    if (typeof value === 'object' && value !== null) {
+      formattedValue = `<pre class="json-code">${JSON.stringify(value, null, 2)}</pre>`;
+    } else if (typeof value === 'string') {
+      // Check if the string contains line breaks
+      if (value.includes('\n')) {
+        formattedValue = `<p class="multiline-text">${value.replace(/\n/g, '<br>')}</p>`;
+      } else {
+        formattedValue = `<p>${value}</p>`;
+      }
+    } else {
+      formattedValue = `<p>${value}</p>`;
+    }
+    
+    return `
+      <div class="analysis-section json-block" style="--index: ${index}">
+        <h3>${key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</h3>
+        <div class="analysis-details">
+          ${formattedValue}
+        </div>
+      </div>
+    `;
+  }).join('');
+}

@@ -1,0 +1,159 @@
+// Market Tips functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const marketTipsTab = document.getElementById('market-tips-tab');
+  if (!marketTipsTab) return;
+  
+  // Load market tips
+  loadMarketTips();
+  
+  // Set up refresh button
+  const refreshButton = document.getElementById('refresh-tips');
+  if (refreshButton) {
+    refreshButton.addEventListener('click', function() {
+      loadMarketTips(true);
+    });
+  }
+});
+
+function loadMarketTips(showLoader = false) {
+  const tipsContainer = document.getElementById('market-tips-container');
+  const loader = document.getElementById('tips-loader');
+  
+  if (!tipsContainer) return;
+  
+  // Show loader if requested
+  if (showLoader && loader) {
+    loader.classList.add('active');
+    tipsContainer.innerHTML = '';
+  }
+  
+  // Fetch market tips from the server
+  fetch('/market-tips')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to load market tips');
+      }
+      return response.json();
+    })
+    .then(tips => {
+      // Hide loader
+      if (loader) loader.classList.remove('active');
+      
+      // Display tips
+      displayMarketTips(tips, tipsContainer);
+    })
+    .catch(error => {
+      console.error('Error loading market tips:', error);
+      
+      // Hide loader
+      if (loader) loader.classList.remove('active');
+      
+      // Show error message
+      tipsContainer.innerHTML = `
+        <div class="alert alert-danger">
+          <h4>Error Loading Market Tips</h4>
+          <p>${error.message}</p>
+          <button class="btn btn-outline-danger mt-3" onclick="loadMarketTips(true)">
+            Try Again
+          </button>
+        </div>
+      `;
+    });
+}
+
+function displayMarketTips(tips, container) {
+  if (!tips || tips.length === 0) {
+    container.innerHTML = `
+      <div class="alert alert-warning">
+        <h4>No Market Tips Available</h4>
+        <p>Check back later for market insights.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '';
+  
+  // Sort tips by timestamp (newest first)
+  tips.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  // Create HTML for each tip
+  tips.forEach(tip => {
+    const date = new Date(tip.timestamp);
+    const formattedDate = date.toLocaleString();
+    
+    html += `
+      <div class="market-tip">
+        <div class="tip-header">
+          <h3 class="tip-title">${tip.title}</h3>
+          <span class="tip-sentiment sentiment-${tip.sentiment}">${tip.sentiment}</span>
+        </div>
+        <p>${tip.description}</p>
+        <div class="tip-timestamp">${formattedDate}</div>
+      </div>
+    `;
+  });
+  
+  // Add last updated timestamp
+  html += `
+    <div class="text-muted mt-4">
+      <small>Last updated: ${new Date().toLocaleString()}</small>
+    </div>
+  `;
+  
+  container.innerHTML = html;
+  
+  // Add animation to make tips appear one by one
+  const tipElements = container.querySelectorAll('.market-tip');
+  tipElements.forEach((tip, index) => {
+    tip.style.opacity = '0';
+    tip.style.transform = 'translateY(20px)';
+    tip.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    
+    setTimeout(() => {
+      tip.style.opacity = '1';
+      tip.style.transform = 'translateY(0)';
+    }, index * 100);
+  });
+}
+
+// Function to filter tips by sentiment
+function filterTipsBySentiment(sentiment) {
+  const tips = document.querySelectorAll('.market-tip');
+  
+  if (sentiment === 'all') {
+    tips.forEach(tip => {
+      tip.style.display = 'block';
+    });
+    return;
+  }
+  
+  tips.forEach(tip => {
+    const tipSentiment = tip.querySelector('.tip-sentiment').textContent;
+    if (tipSentiment === sentiment) {
+      tip.style.display = 'block';
+    } else {
+      tip.style.display = 'none';
+    }
+  });
+}
+
+// Set up sentiment filter buttons
+document.addEventListener('DOMContentLoaded', function() {
+  const filterButtons = document.querySelectorAll('.filter-sentiment');
+  if (!filterButtons.length) return;
+  
+  filterButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // Remove active class from all buttons
+      filterButtons.forEach(btn => btn.classList.remove('active'));
+      
+      // Add active class to clicked button
+      this.classList.add('active');
+      
+      // Filter tips
+      const sentiment = this.getAttribute('data-sentiment');
+      filterTipsBySentiment(sentiment);
+    });
+  });
+});

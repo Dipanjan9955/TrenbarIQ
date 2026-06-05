@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - TrendBar IQ</title>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Animate.css for animations -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Header -->
+  <header id="app-header">
+    <div class="container">
+      <div class="nav">
+        <div class="logo animate__animated animate__fadeIn">
+      
+          <span class="logo-text">TrendBar IQ</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+      {% for message in get_flashed_messages() %}
+      <div class="flash-message">
+        <div class="flash-message-content">
+          <div class="flash-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="flash-text">{{ message }}</div>
+        </div>
+        <button class="flash-close" onclick="this.parentElement.style.display='none'">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="auth-container">
+      <div class="auth-header">
+        <h1>Register</h1>
+        <p>Create a new account to access all features</p>
+      </div>
+      
+      <form id="register-form" method="POST" action="/register">
+        <div class="form-group">
+          <label for="register-username" class="form-label">Username</label>
+          <input type="text" id="register-username" name="username" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="register-email" class="form-label">Email</label>
+          <input type="email" id="register-email" name="email" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="register-password" class="form-label">Password</label>
+          <div class="input-group">
+            <input type="password" id="register-password" name="password" class="form-control" required>
+            <div class="input-group-append">
+              <button type="button" class="eye password-toggle" data-target="register-password">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="register-confirm-password" class="form-label">Confirm Password</label>
+          <div class="input-group">
+            <input type="password" id="register-confirm-password" name="confirm_password" class="form-control" required>
+            <div class="input-group-append">
+              <button type="button" class=" eye password-toggle" data-target="register-confirm-password">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-block">Register</button>
+        </div>
+      </form>
+      
+      <div class="auth-options">
+        <a href="/login">Already have an account?</a>
+        <a href="/" id="skip-login">Skip Registration</a>
+      </div>
+      
+      <div class="auth-footer">
+        <p>Already have an account? <a href="/login">Login</a></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="container mt-5 mb-3">
+    <div class="text-center">
+      <div class="footer-logo">
+        <svg width="24" height="24" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
+          <path d="M18 0C8.059 0 0 8.059 0 18s8.059 18 18 18 18-8.059 18-18S27.941 0 18 0zm0 2.25c8.698 0 15.75 7.052 15.75 15.75S26.698 33.75 18 33.75 2.25 26.698 2.25 18 9.302 2.25 18 2.25z" fill="url(#paint0_linear)"/>
+          <path d="M27 9L18 18l-9 9" stroke="url(#paint1_linear)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M9 9l9 9 9 9" stroke="url(#paint2_linear)" stroke-width="3" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="paint0_linear" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00F7FF"/>
+              <stop offset="1" stop-color="#00FF7F"/>
+            </linearGradient>
+            <linearGradient id="paint1_linear" x1="9" y1="9" x2="27" y2="27" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FF00E5"/>
+              <stop offset="1" stop-color="#00F7FF"/>
+            </linearGradient>
+            <linearGradient id="paint2_linear" x1="9" y1="9" x2="27" y2="27" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00FF7F"/>
+              <stop offset="1" stop-color="#FFCB00"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="logo-text-small">TrendBar IQ</span>
+      </div>
+      <p class="mt-2">
+        <span class="rgb-text">TrendBar IQ</span> &copy; 2025 | Powered by <a href="#" class="gradient-text">Grip To World</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

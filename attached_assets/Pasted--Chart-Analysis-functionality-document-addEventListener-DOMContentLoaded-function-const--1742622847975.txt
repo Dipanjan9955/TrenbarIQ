@@ -1,0 +1,193 @@
+// Chart Analysis functionality
+document.addEventListener('DOMContentLoaded', function () {
+  const analysisTab = document.getElementById('ai-analysis-tab');
+  if (!analysisTab) return;
+
+  initChartAnalysis();
+});
+
+function initChartAnalysis() {
+  const fileInput = document.getElementById('chart-upload');
+  const imagePreview = document.getElementById('chart-preview');
+  const analysisResult = document.getElementById('analysis-result');
+  const analyzeButton = document.getElementById('analyze-button');
+  const loader = document.getElementById('analysis-loader');
+
+  if (!fileInput || !imagePreview || !analysisResult || !analyzeButton || !loader) return;
+
+  // Handle file selection for preview
+  fileInput.addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Show image preview
+    imagePreview.src = URL.createObjectURL(file);
+    imagePreview.style.display = 'block';
+
+    // Clear previous results
+    analysisResult.innerHTML = '';
+    analysisResult.style.display = 'none';
+
+    // Enable analyze button
+    analyzeButton.disabled = false;
+  });
+
+  // Handle analyze button click
+  analyzeButton.addEventListener('click', async function () {
+    const file = fileInput.files[0];
+    if (!file) {
+      showMessage('Please select a chart image first', 'warning');
+      return;
+    }
+
+    try {
+      // Show loader
+      loader.classList.add('active');
+      analysisResult.style.display = 'none';
+      analyzeButton.disabled = true;
+
+      // Create form data for upload
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Send request to analyze endpoint
+      const response = await fetch('/analyze', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Process the result
+      let resultText = data.result.trim();
+
+      // Strip backticks (if response starts and ends with ```json)
+      if (resultText.startsWith('```json')) {
+        resultText = resultText.replace(/^```json/, '').replace(/```$/, '').trim();
+      }
+
+      try {
+        // Parse JSON if valid
+        const jsonResult = JSON.parse(resultText);
+        displayAnalysisResult(jsonResult);
+      } catch (e) {
+        // Display a structured text-based result if not JSON
+        displayAnalysisResult({ message: resultText });
+      }
+    } catch (error) {
+      console.error('Error analyzing chart:', error);
+      analysisResult.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Error analyzing chart: ${error.message}</p>
+          <p>Please try again or check the console for more details.</p>
+        </div>`;
+      analysisResult.style.display = 'block';
+    } finally {
+      // Hide loader
+      loader.classList.remove('active');
+      analyzeButton.disabled = false;
+    }
+  });
+
+  function displayAnalysisResult(data) {
+    if (!analysisResult) return;
+
+    analysisResult.innerHTML = '';
+    analysisResult.style.display = 'block';
+
+    try {
+      let html = '<div class="analysis-content">';
+
+      // If result is an object, format it properly
+      if (typeof data === 'object') {
+        for (const [key, value] of Object.entries(data)) {
+          html += `
+            <div class="analysis-section">
+              <h3>${formatKey(key)}</h3>
+              <div class="analysis-details">
+                ${formatValue(value)}
+              </div>
+            </div>`;
+        }
+      } else {
+        // Display as text (fallback)
+        html += `<p>${data}</p>`;
+      }
+
+      html += '</div>';
+      analysisResult.innerHTML = html;
+
+      // Scroll to result
+      analysisResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (error) {
+      console.error('Error displaying analysis:', error);
+      analysisResult.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Error displaying analysis results. Please try again.</p>
+        </div>`;
+    }
+  }
+
+  // Format JSON keys nicely (e.g., "price_trend" → "Price Trend")
+  function formatKey(key) {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  // Format JSON values with better readability
+  function formatValue(value) {
+    if (typeof value === 'object') {
+      return `<ul>${Object.entries(value).map(([k, v]) => `<li><strong>${formatKey(k)}:</strong> ${v}</li>`).join('')}</ul>`;
+    }
+    return `<p>${value}</p>`;
+  }
+
+  function showMessage(message, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.textContent = message;
+    analysisResult.parentElement.insertBefore(messageDiv, analysisResult);
+    setTimeout(() => messageDiv.remove(), 5000);
+  }
+}
+
+function saveAnalysisToProfile(analysis) {
+  fetch('/user-status')
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === 'authenticated') {
+        fetch('/save-analysis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            analysis: analysis,
+            symbol: 'UNKNOWN',
+            timeframe: '1d',
+          }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            if (result.success) {
+              showMessage('Analysis saved successfully!', 'success');
+            }
+          })
+          .catch(() => {
+            showMessage('Error saving analysis', 'error');
+          });
+      } else {
+        showMessage('Please log in to save analysis', 'warning');
+      }
+    });
+}

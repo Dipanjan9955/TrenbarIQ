@@ -1,0 +1,386 @@
+import os
+import logging
+import google.generativeai as genai
+import base64
+import json
+from datetime import datetime
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
+from flask_cors import CORS
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from models import db, User, UserPreference, ChartAnalysis, BacktestResult
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Initialize the app
+app = Flask(__name__)
+app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
+CORS(app)
+
+# Configure database
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///trendbar.db")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+# Configure login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+# Configure Gemini AI API Key
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyDaXMLoAFdFIgGHFs_m-Rv_k0je1atdXAQ")
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Configure upload folder
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Initialize the database tables if they don't exist
+with app.app_context():
+    db.create_all()
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Load user by ID for Flask-Login"""
+    return User.query.get(int(user_id))
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def encode_image(image_path):
+    """Convert image to base64 for API"""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode("utf-8")
+
+def analyze_chart(image_path):
+    """Analyze trading chart using Gemini API"""
+    if not GEMINI_API_KEY:
+        return "Error: Gemini API key not configured"
+
+    try:
+        base64_image = encode_image(image_path)
+
+        prompt_text = """
+        You are a trading AI expert. Analyze the uploaded chart and provide insights:
+
+        **🔹 Market Analysis:**  
+        1️ Coin Name & Price  
+        2️ Strong & Weak Support/Resistance Levels  
+        3️ SMC Concepts (Break of Structure, Change of Character)  
+        4️ Key Liquidity Zones (Buy/Sell Traps)  
+        5️ Market Condition (Bullish/Bearish/Sideways)  
+        6️ Future Trend Prediction  
+        7️ Entry & Exit Strategy  
+        8️ Stoploss & Take Profit Targets  
+        9️ Risk-Reward Ratio  
+        10 EMA Analysis (9, 21, 50, 200 EMA) 
+        11 RSI Condition (Overbought/Oversold/Divergence)  
+        12️ Bollinger Bands & Volume Spikes  
+        13️ Candlestick Pattern Recognition  
+        14️ Institutional Accumulation/Distribution Analysis  
+
+        Return your analysis as a proper JSON structure with each category as a key, ensure you NEVER add backticks (```) or json tags before or after your response.
+        """
+
+        # Initialize the model with gemini-1.5-flash
+        model = genai.GenerativeModel('gemini-1.5-flash')
+
+        # Determine image MIME type based on file extension
+        mime_type = "image/jpeg"  # default
+        if image_path.lower().endswith('.png'):
+            mime_type = "image/png"
+        elif image_path.lower().endswith('.gif'):
+            mime_type = "image/gif"
+
+        # Create content for the model using the updated API format
+        response = model.generate_content(
+            [prompt_text, {"mime_type": mime_type, "data": base64_image}]
+        )
+
+        # Extract text from response
+        result_text = response.text
+
+        # Try to extract JSON from the response
+        # If the response contains literal ```json tags, remove them
+        if '```json' in result_text:
+            result_text = result_text.replace('```json', '').replace('```', '').strip()
+        elif result_text.startswith('```') and result_text.endswith('```'):
+            result_text = result_text[3:-3].strip()
+
+        # Return the cleaned response text
+        return result_text
+
+    except Exception as e:
+        logging.error(f"Error analyzing chart: {str(e)}")
+        return f"Error analyzing chart: {str(e)}"
+        
+@app.route("/")
+def index():
+    """Render the main application page"""
+    return render_template("index.html")
+
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    """API endpoint to analyze chart images"""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+
+        result = analyze_chart(file_path)
+        return jsonify({"result": result})
+
+    return jsonify({"error": "Invalid file type"}), 400
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Handle user login with database"""
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        # Find user in database
+        user = User.query.filter_by(username=username).first()
+
+        if user and check_password_hash(user.password_hash, password):
+            # Use Flask-Login to manage session
+            login_user(user)
+            flash("Login successful!")
+            return redirect(url_for("index"))
+        else:
+            flash("Invalid username or password")
+
+    return render_template("login.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Handle user registration with database"""
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        # Check if user already exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Username already exists")
+            return render_template("register.html")
+
+        # Check if email already exists
+        existing_email = User.query.filter_by(email=email).first()
+        if existing_email:
+            flash("Email already registered")
+            return render_template("register.html")
+
+        # Create new user
+        new_user = User(
+            username=username,
+            email=email,
+            password_hash=generate_password_hash(password)
+        )
+
+        # Create default preferences
+        new_preferences = UserPreference(
+            user=new_user,
+            theme="dark",
+            notifications_enabled=True,
+            default_timeframe="1d",
+            default_symbol="BTCUSDT"
+        )
+
+        # Save to database
+        db.session.add(new_user)
+        db.session.add(new_preferences)
+        db.session.commit()
+
+        # Log user in
+        login_user(new_user)
+        flash("Registration successful!")
+        return redirect(url_for("index"))
+
+    return render_template("register.html")
+
+@app.route("/logout")
+@login_required
+def logout():
+    """Handle user logout with Flask-Login"""
+    logout_user()
+    # Also clear the guest session if it exists
+    session.pop("guest", None)
+    flash("You have been logged out")
+    return redirect(url_for("index"))
+
+@app.route("/skip-login")
+def skip_login():
+    """Allow users to skip login and use limited features"""
+    session["guest"] = True
+    return redirect(url_for("index"))
+
+@app.route("/user-status")
+def user_status():
+    """Get current user status (logged in, guest, or not authenticated)"""
+    if current_user.is_authenticated:
+        return jsonify({
+            "status": "authenticated", 
+            "username": current_user.username,
+            "id": current_user.id
+        })
+    elif "guest" in session:
+        return jsonify({"status": "guest"})
+    else:
+        return jsonify({"status": "not_authenticated"})
+
+@app.route("/save-preferences", methods=["POST"])
+@login_required
+def save_preferences():
+    """Save user preferences to database"""
+    data = request.get_json()
+
+    # Get or create preferences
+    preferences = UserPreference.query.filter_by(user_id=current_user.id).first()
+    if not preferences:
+        preferences = UserPreference(user_id=current_user.id)
+        db.session.add(preferences)
+
+    # Update preferences
+    preferences.theme = data.get('theme', 'dark')
+    preferences.notifications_enabled = data.get('notifications_enabled', True)
+    preferences.default_timeframe = data.get('default_timeframe', '1d')
+    preferences.default_symbol = data.get('default_symbol', 'BTCUSDT')
+    preferences.ui_animations = data.get('ui_animations', True)
+
+    db.session.commit()
+    return jsonify({"success": True})
+
+@app.route("/get-preferences")
+@login_required
+def get_preferences():
+    """Get user preferences from database"""
+    preferences = UserPreference.query.filter_by(user_id=current_user.id).first()
+
+    if preferences:
+        return jsonify(preferences.to_dict())
+    else:
+        # Return defaults if no preferences found
+        return jsonify({
+            "theme": "dark",
+            "notifications_enabled": True,
+            "default_timeframe": "1d",
+            "default_symbol": "BTCUSDT",
+            "ui_animations": True
+        })
+
+@app.route("/save-backtest", methods=["POST"])
+@login_required
+def save_backtest():
+    """Save backtest results to database"""
+    data = request.get_json()
+
+    # Create new backtest result
+    backtest = BacktestResult(
+        user_id=current_user.id,
+        asset=data.get('asset', 'Unknown'),
+        timeframe=data.get('timeframe', '1d'),
+        strategy=data.get('strategy', 'Custom'),
+        parameters=json.dumps(data.get('parameters', {})),
+        initial_capital=float(data.get('initialCapital', 0)),
+        final_capital=float(data.get('finalCapital', 0)),
+        profit_loss=float(data.get('profitLoss', 0)),
+        profit_loss_percent=float(data.get('profitLossPercent', 0)),
+        total_trades=int(data.get('totalTrades', 0)),
+        winning_trades=int(data.get('winningTrades', 0)),
+        losing_trades=int(data.get('losingTrades', 0))
+    )
+
+    db.session.add(backtest)
+    db.session.commit()
+
+    return jsonify({"success": True, "id": backtest.id})
+
+@app.route("/get-backtest-results")
+@login_required
+def get_backtest_results():
+    """Get user's backtest results from database"""
+    results = BacktestResult.query.filter_by(user_id=current_user.id).order_by(BacktestResult.created_at.desc()).all()
+    return jsonify([result.to_dict() for result in results])
+
+@app.route("/save-analysis", methods=["POST"])
+@login_required
+def save_analysis():
+    """Save chart analysis to database"""
+    data = request.get_json()
+
+    # Create new analysis entry
+    analysis = ChartAnalysis(
+        user_id=current_user.id,
+        result_json=data.get('analysis', '{}'),
+        symbol=data.get('symbol', 'Unknown'),
+        timeframe=data.get('timeframe', '1d'),
+        image_path=data.get('image_path', '')
+    )
+
+    db.session.add(analysis)
+    db.session.commit()
+
+    return jsonify({"success": True, "id": analysis.id})
+
+@app.route("/get-analyses")
+@login_required
+def get_analyses():
+    """Get user's saved analyses from database"""
+    analyses = ChartAnalysis.query.filter_by(user_id=current_user.id).order_by(ChartAnalysis.created_at.desc()).all()
+    return jsonify([analysis.to_dict() for analysis in analyses])
+
+@app.route("/market-tips")
+def market_tips():
+    """API endpoint to get market tips (preset data for demo)"""
+    tips = [
+        {
+            "title": "Bitcoin Testing Critical Support",
+            "description": "BTC is currently testing a major support level at $62,000. Watch for a potential bounce or breakdown.",
+            "sentiment": "neutral",
+            "timestamp": "2023-07-01T12:30:00Z"
+        },
+        {
+            "title": "Ethereum Showing Bullish Divergence",
+            "description": "ETH price shows a bullish RSI divergence, indicating potential upward movement in the coming days.",
+            "sentiment": "bullish",
+            "timestamp": "2023-07-01T10:15:00Z"
+        },
+        {
+            "title": "Altcoin Season Approaching",
+            "description": "Market indicators suggest we may be entering an altcoin season as BTC dominance decreases.",
+            "sentiment": "bullish",
+            "timestamp": "2023-07-01T09:00:00Z"
+        },
+        {
+            "title": "Stock Market Volatility Affecting Crypto",
+            "description": "Recent stock market movements have created increased volatility in crypto markets.",
+            "sentiment": "bearish",
+            "timestamp": "2023-06-30T16:45:00Z"
+        },
+        {
+            "title": "Major Resistance Level for Cardano",
+            "description": "ADA approaching a significant resistance level at $0.45, watch for rejection or breakout.",
+            "sentiment": "neutral",
+            "timestamp": "2023-06-30T14:20:00Z"
+        }
+    ]
+
+    return jsonify(tips)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
